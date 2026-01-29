@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   Calendar, 
   BarChart3, 
-  CheckSquare, 
   FileSpreadsheet, 
   Save, 
   Clock, 
@@ -19,7 +18,8 @@ import {
   PlayCircle,
   CheckCircle2,
   AlertCircle,
-  RefreshCw
+  RefreshCw,
+  CheckSquare // Fixed: Added missing import
 } from 'lucide-react';
 import { initializeApp } from 'firebase/app';
 import { 
@@ -35,6 +35,36 @@ import {
   getDoc, 
   onSnapshot
 } from 'firebase/firestore';
+
+// --- Types ---
+interface ScheduleRow {
+  id: string;
+  date: string;
+  day: string;
+  gs1: string;
+  gs2: string;
+  ca: string;
+  revision: string;
+  maths: string;
+  csat: string;
+  test: string;
+  testType: string;
+  testColor: string;
+  status: string;
+  notes: string;
+}
+
+interface SyllabusItem {
+  topic: string;
+  status: string;
+}
+
+interface TestItem {
+  date: string;
+  name: string;
+  type: string;
+  color: string;
+}
 
 // --- Gemini API Configuration ---
 const apiKey = "AIzaSyDVyq4A9CSP6lHeX6FeDYK9jhgUMAo9j8k"; 
@@ -60,8 +90,8 @@ const PRELIMS_DATE = new Date('2026-05-24T09:30:00');
 const START_DATE = new Date('2026-01-26');
 const TOTAL_DAYS = 119;
 
-// --- VAJIRAM TEST SCHEDULE (PRESERVED) ---
-const TEST_SCHEDULE = [
+// --- VAJIRAM TEST SCHEDULE ---
+const TEST_SCHEDULE: TestItem[] = [
   { date: '2026-02-05', name: 'Vajiram: Polity NCERT + Geog NCERT', type: 'Sectional', color: 'blue' },
   { date: '2026-02-12', name: 'Vajiram: Econ NCERT + Hist NCERT', type: 'Sectional', color: 'blue' },
   { date: '2026-02-19', name: 'Vajiram: Comp. Polity + May CA', type: 'Comprehensive', color: 'yellow' },
@@ -83,7 +113,7 @@ const TEST_SCHEDULE = [
   { date: '2026-05-17', name: 'Internal Mock 6 (4.5h)', type: 'Mock', color: 'red' },
 ];
 
-const INITIAL_SYLLABUS = [
+const INITIAL_SYLLABUS: SyllabusItem[] = [
   { topic: 'Polity: Preamble & Framework', status: 'Not Started' },
   { topic: 'Polity: Fundamental Rights', status: 'Not Started' },
   { topic: 'Polity: Parliament', status: 'Not Started' },
@@ -258,7 +288,7 @@ const formatDate = (date: Date) => date.toISOString().split('T')[0];
 const getDayName = (dateStr: string) => new Date(dateStr).toLocaleDateString('en-US', { weekday: 'short' });
 
 const generateInitialSchedule = () => {
-  const schedule = [];
+  const schedule: ScheduleRow[] = [];
   let currentDate = new Date(START_DATE);
 
   for (let i = 0; i < TOTAL_DAYS; i++) {
@@ -396,9 +426,9 @@ const App = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('schedule');
-  const [scheduleData, setScheduleData] = useState<any[]>([]);
-  const [syllabusData, setSyllabusData] = useState(INITIAL_SYLLABUS);
-  const [testData, setTestData] = useState(TEST_SCHEDULE);
+  const [scheduleData, setScheduleData] = useState<ScheduleRow[]>([]);
+  const [syllabusData, setSyllabusData] = useState<SyllabusItem[]>(INITIAL_SYLLABUS);
+  const [testData, setTestData] = useState<TestItem[]>(TEST_SCHEDULE);
   const [saving, setSaving] = useState(false);
   const [timeLeft, setTimeLeft] = useState('');
   const [isExpanded, setIsExpanded] = useState(false); 
